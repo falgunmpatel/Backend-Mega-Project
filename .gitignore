@@ -124,3 +124,6 @@ dist
 .package-lock.json
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
+
+
+.DS_Store
