@@ -11,7 +11,9 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     const totalSubscribers = await Subscription.aggregate([
         {
-            $match: { channel: new mongoose.Types.ObjectId(userId) }
+            $match: {
+                channel: new mongoose.Types.ObjectId(userId)
+            }
         },
         {
             $count: 'totalSubscribers'
@@ -20,31 +22,31 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
     const totalVideosViews = await Video.aggregate([
         {
-            $match: { user: new mongoose.Types.ObjectId(userId) }
+            $match: {
+                owner: new mongoose.Types.ObjectId(userId)
+            }
         },
         {
             $group: {
                 _id: null,
-                totalViews: { $sum: '$views' }
+                totalViews: { 
+                    $sum: '$views' 
+                }
             }
         }
     ]);
 
     const totalLikes = await Like.aggregate([
         {
-            $match: { user: new mongoose.Types.ObjectId(userId) }
+            $match: {
+                likedBy: new mongoose.Types.ObjectId(userId)
+            }
         },
         {
-            $count: 'totalLikes'
-        }
-    ]);
-
-    const totalVideos = await Video.aggregate([
-        {
-            $match: { user: new mongoose.Types.ObjectId(userId) }
-        },
-        {
-            $count: 'totalVideos'
+            $group: {
+                _id: null,
+                totalLikes: { $sum: 1 } // Count the documents
+            }
         }
     ]);
 
@@ -52,7 +54,6 @@ const getChannelStats = asyncHandler(async (req, res) => {
         totalSubscribers: totalSubscribers[0]?.totalSubscribers || 0,
         totalVideosViews: totalVideosViews[0]?.totalViews || 0,
         totalLikes: totalLikes[0]?.totalLikes || 0,
-        totalVideos: totalVideos[0]?.totalVideos || 0
     }
 
     return res
@@ -94,7 +95,7 @@ const getChannelVideos = asyncHandler(async (req, res) => {
             }
         }
     ]);
-    
+
     return res
         .status(200)
         .json(new ApiResponse(
