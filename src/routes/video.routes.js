@@ -44,7 +44,7 @@ router.route("/toggle/publish/:videoId").patch(togglePublishStatus);
 
 router.route("/:videoId/view").get(increaseVideoViews);
 
-router.route("/recommendations").get(getRecommendedVideos);
+router.route("/recommendations").post(getRecommendedVideos);
 
 router.route("/v/:username").get(getUsersAllVideo);
 

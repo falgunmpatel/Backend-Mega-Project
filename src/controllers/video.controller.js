@@ -262,18 +262,57 @@ const increaseVideoViews = asyncHandler(async (req, res) => {
 });
 
 const getRecommendedVideos = asyncHandler(async (req, res) => {
-    const videos = await Video.find({ isPublished: true })
-        .sort({ views: -1 })
-        .limit(5);
+  const videos = await Video.aggregate([
+    {
+      $match: {
+        isPublished: true,
+      },
+    },
+    {
+      $sort: {
+        views: -1,
+      },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    {
+      $unwind: "$owner",
+    },
+    {
+      $project: {
+        "owner.password": 0,
+        "owner.email": 0,
+        "owner.createdAt": 0,
+        "owner.updatedAt": 0,
+        "owner.__v": 0,
+        "owner.refreshToken": 0,
+        "owner.coverImage": 0,
+        "owner.watchHistory": 0,
+      },
+    },
+  ]);
 
-    return res
-        .status(200)
-        .json(new ApiResponse(
-            200,
-            videos,
-            "Recommended videos has been fetched successfully"
-        ))
-})
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        videos,
+        "Recommended videos has been fetched successfully"
+      )
+    );
+});
+
+
 
 export {
     getAllVideos,
